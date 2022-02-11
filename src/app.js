@@ -43,7 +43,7 @@ export default () => {
 
     schema.validate({ url: rssData.get('url') })
       .then((source) => {
-        form.reset();
+        form.reset(); // place that in render
         form.url.focus(); // place that in render
         watchedState.feeds.push(source.url);
         watchedState.isValid = true;
@@ -51,7 +51,7 @@ export default () => {
       .catch((error) => {
         watchedState.isValid = false;
         watchedState.errors.push(error);
-      });
+      }); // place that in render?
 
     console.log('Submitted!');
   });
