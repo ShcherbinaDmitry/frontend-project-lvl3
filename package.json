@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.16.8",
+    "axios": "^0.26.0",
     "fs": "^0.0.1-security",
     "i18next": "^21.6.11",
     "npm-check-updates": "^11.8.5",
