@@ -1,9 +1,10 @@
 import * as yup from 'yup';
 import onChange from 'on-change';
 import i18n from 'i18next';
+import _ from 'lodash';
 import render from './view';
 import resources from './locales/index.js';
-import parse from './parse';
+import parser from './parse';
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -38,31 +39,71 @@ export default () => {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('#url-input'),
     submitBtn: document.querySelector('button[type=submit]'),
-    feedback: document.querySelector('.feedback'),
-    feeds: document.querySelector('.feeds'),
-    posts: document.querySelector('.posts'),
+    feedbackContainer: document.querySelector('.feedback'),
+    feedsContainer: document.querySelector('.feeds'),
+    postsContainer: document.querySelector('.posts'),
+    body: document.querySelector('body'),
+    modal: document.querySelector('.modal'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalBody: document.querySelector('.modal-body'),
+    modalFooter: document.querySelector('.modal-footer a'),
+    modalCloseBtn: document.querySelectorAll('[data-bs-dismiss=modal]'),
   };
 
   const watchedState = onChange(state, render(elements, i18nInstance));
 
+  const customizer = (value, other) => {
+    if (value.pubDate.getTime() !== other.pubDate.getTime()) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // eslint-disable-next-line no-unused-vars
+  let timerId = setTimeout(function checkFeed() {
+    console.log('Timer!');
+    watchedState.feeds.forEach((feed) => {
+      parser(feed)
+        .then(({ posts }) => {
+          const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
+          const newPosts = _.differenceWith(posts, oldPosts, customizer);
+          if (newPosts.length) {
+            watchedState.posts = [...watchedState.posts, ...newPosts]
+              .sort((a, b) => a.pubDate - b.pubDate);
+          }
+        }).catch((err) => {
+          watchedState.errors = err;
+        });
+    });
+
+    timerId = setTimeout(checkFeed, 5000);
+  }, 5000);
+
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    console.log(i18nInstance.t('headers.feeds'));
-
     const rssData = new FormData(e.target);
 
-    schema.validate({ url: rssData.get('url') })
+    schema.validate({ url: rssData.get('url').trim() })
       .then(({ url }) => {
-        if (watchedState.feeds.includes(url)) {
+        if (watchedState.feeds.find((feed) => feed.url === url)) {
           throw new Error('This url was already added');
         }
-        watchedState.feeds.push(url);
-        const posts = parse(url);
-        watchedState.push(posts);
+
+        const feedObj = {
+          url,
+          id: _.uniqueId(),
+        };
+
+        return parser(feedObj);
+      }).then(({ feed, posts }) => {
+        watchedState.feeds.push(feed);
+        watchedState.posts = [...watchedState.posts, ...posts]
+          .sort((a, b) => a.pubDate - b.pubDate);
         watchedState.isValid = true;
-      })
-      .catch((error) => {
+      }).catch((error) => {
+        console.log(error);
         watchedState.errors = error;
         watchedState.isValid = false;
       });
