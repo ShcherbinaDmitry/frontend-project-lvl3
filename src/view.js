@@ -21,11 +21,18 @@ export default (elements, i18nInstance) => (path, value) => {
     modal.style.display = 'none';
     modal.ariaModal = 'false';
     modal.ariaHidden = 'true';
+
+    body.removeChild(body.lastChild);
   };
 
   const showModal = (event, post) => {
     body.style.cssText = 'overflow:hidden; padding-right: 0px';
     body.classList.add('modal-open');
+
+    const modalBackdrop = document.createElement('div');
+    modalBackdrop.classList.add('modal-backdrop', 'fade', 'show');
+
+    body.appendChild(modalBackdrop);
 
     modal.classList.add('show');
     modal.style.display = 'block';
@@ -85,7 +92,7 @@ export default (elements, i18nInstance) => (path, value) => {
     feedsContainer.replaceChildren(feedCard);
   };
 
-  const renderPosts = (postData) => {
+  const renderPosts = (postData, watchedPosts = []) => {
     const postCard = document.createElement('div');
     postCard.classList.add('card', 'border-0');
 
@@ -112,12 +119,19 @@ export default (elements, i18nInstance) => (path, value) => {
       postLink.setAttribute('target', '_blank');
       postLink.setAttribute('rel', 'noopener norefferer');
       postLink.textContent = post.title;
-      if (post.watched) {
+      if (watchedPosts.includes(post.id)) {
         postLink.classList.remove('fw-bold');
         postLink.classList.add('fw-normal', 'link-secondary');
       } else {
         postLink.classList.add('fw-bold');
       }
+
+      postLink.addEventListener('click', () => {
+        if (!watchedPosts.includes(post.id)) {
+          watchedPosts.push(post.id);
+          renderPosts(postData, watchedPosts);
+        }
+      });
 
       const postViewBtn = document.createElement('button');
       postViewBtn.classList.add('btn', 'btn-outline-primary', 'btn-sm');
@@ -126,7 +140,13 @@ export default (elements, i18nInstance) => (path, value) => {
       postViewBtn.setAttribute('data-bs-toggle', 'modal');
       postViewBtn.setAttribute('data-bs-target', '#modal');
       postViewBtn.textContent = i18nInstance.t('headers.viewBtn');
-      postViewBtn.addEventListener('click', (e) => showModal(e, post));
+      postViewBtn.addEventListener('click', (e) => {
+        showModal(e, post);
+        if (!watchedPosts.includes(post.id)) {
+          watchedPosts.push(post.id);
+          renderPosts(postData, watchedPosts);
+        }
+      });
 
       postItem.appendChild(postLink);
       postItem.appendChild(postViewBtn);
@@ -170,14 +190,14 @@ export default (elements, i18nInstance) => (path, value) => {
       break;
     case 'posts':
       renderPosts(value);
-      const links = document.querySelectorAll('a');
-      links.forEach((link) => {
-        link.addEventListener('click', (e) => {
-          const { id } = e.target.dataset;
-          value.find((item) => item.id === id).watched = true;
-          renderPosts(value);
-        });
-      });
+      // const links = document.querySelectorAll('a');
+      // links.forEach((link) => {
+      //   link.addEventListener('click', (e) => {
+      //     const { id } = e.target.dataset;
+      //     value.find((item) => item.id === id).watched = true;
+      //     renderPosts(value);
+      //   });
+      // });
       break;
     case 'errors':
       renderError(value);

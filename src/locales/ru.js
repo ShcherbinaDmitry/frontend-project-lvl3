@@ -10,6 +10,8 @@ export default {
       noValidRss: 'Ресурс не содержит валидный RSS',
       alreadyExists: 'RSS уже существует',
       valid: 'RSS успешно загружен',
+      isEmpty: 'Не должно быть пустым',
+      netError: 'Ошибка сети',
     },
   },
 };
