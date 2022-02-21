@@ -3,8 +3,8 @@ import onChange from 'on-change';
 import i18n from 'i18next';
 import _ from 'lodash';
 import render from './view';
-import resources from './locales/index.js';
-import parser from './parse';
+import resources from './locales';
+import parser from './parser';
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -69,8 +69,8 @@ export default () => {
           const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
           const newPosts = _.differenceWith(posts, oldPosts, customizer);
           if (newPosts.length) {
-            watchedState.posts = [...watchedState.posts, ...newPosts]
-              .sort((a, b) => a.pubDate - b.pubDate);
+            watchedState.posts = [...newPosts, ...watchedState.posts]
+              .sort((a, b) => b.pubDate - a.pubDate);
           }
         }).catch((err) => {
           watchedState.errors = err;
@@ -100,7 +100,7 @@ export default () => {
       }).then(({ feed, posts }) => {
         watchedState.feeds.push(feed);
         watchedState.posts = [...watchedState.posts, ...posts]
-          .sort((a, b) => a.pubDate - b.pubDate);
+          .sort((a, b) => b.pubDate - a.pubDate);
         watchedState.isValid = true;
       }).catch((error) => {
         console.log(error);

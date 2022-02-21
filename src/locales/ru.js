@@ -5,7 +5,7 @@ export default {
       posts: 'Посты',
       viewBtn: 'Просмотр',
     },
-    messages: {
+    feedbackMsg: {
       notValidUrl: 'Ссылка должна быть валидным URL',
       noValidRss: 'Ресурс не содержит валидный RSS',
       alreadyExists: 'RSS уже существует',

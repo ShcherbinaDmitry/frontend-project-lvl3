@@ -10,11 +10,26 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+      
     steps:
       - uses: actions/checkout@v2
 
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: action/setup-node@v1
+          with:
+            node-version: ${{ matrix.node-version }}
+
       - name: Deps install
         run: make install
+      
+      - name: Build project
+        run: make build
+        env:
+          CI: true
 
       - name: Linter check
         run: make lint
@@ -24,5 +39,5 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_TEST_ID }}
         with:
-          coverageCommand: npm test
+          coverageCommand: make test
           debug: true
