@@ -1,13 +1,22 @@
 export default {
   translation: {
-    feeds: 'Feeds',
-    posts: 'Posts',
-    viewBtn: 'View',
-    messages: {
-      notValidUrl: 'RSS link must be a valid URL',
-      noValidRss: 'This resource does not contain a valid RSS',
-      alreadyExists: 'RSS already exists',
-      valid: 'RSS was successfully loaded',
+    headers: {
+      feeds: 'Feeds',
+      posts: 'Posts',
+    },
+    buttons: {
+      view: 'View',
+    },
+    feedbackMsg: {
+      errors: {
+        notValidUrl: 'RSS link must be a valid URL',
+        noValidRss: 'This resource does not contain a valid RSS',
+        alreadyExists: 'RSS already exists',
+        isEmpty: 'This field must be filled',
+        netError: 'Network error',
+        unknown: 'Unknown error',
+      },
+      success: 'RSS was successfully loaded',
     },
   },
 };

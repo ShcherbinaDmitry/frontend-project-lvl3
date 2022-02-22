@@ -2,9 +2,10 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import i18n from 'i18next';
 import _ from 'lodash';
-import render from './view';
+import view from './view';
 import resources from './locales';
-import parser from './parser';
+import loadFeed from './loadFeed';
+import updatePosts from './updatePosts';
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -13,21 +14,41 @@ export default () => {
     lng: defaultLanguage,
     debug: false,
     resources,
+  }).then(() => {
+    console.log('I18n + yup!');
+    yup.setLocale({
+      string: {
+        url: 'notValidUrl',
+      },
+      mixed: {
+        notOneOf: 'alreadyExists',
+      },
+    });
   });
 
-  yup.setLocale({
-    mixed: {
-      default: 'field_invalid',
-    },
-    url: (url) => ({ key: 'invalid URL', values: url }),
-  });
+  // yup.setLocale({
+  //   mixed: {
+  //     default: 'field_invalid',
+  //   },
+  //   url: (url) => ({ key: 'invalid URL', values: url }),
+  // });
 
-  const schema = yup.object().shape({
-    url: yup.string().url().required(),
-  });
+  // const getUrlSchema = () => yup.string().url().required();
+  const basicSchema = yup.string().url().required();
+
+  const validateUrl = (url, feeds) => {
+    const feedUrls = feeds.map((feed) => feed.url);
+    const validationSchema = basicSchema.notOneOf(feedUrls, i18nInstance.t('feedbackMsg.errors.alreadyExists'));
+
+    return validationSchema.validate(url);
+  };
 
   const state = {
-    processState: 'filling',
+    form: {
+      state: 'filling',
+      error: null,
+      url: '',
+    },
     isValid: true,
     feeds: [],
     posts: [],
@@ -50,7 +71,7 @@ export default () => {
     modalCloseBtn: document.querySelectorAll('[data-bs-dismiss=modal]'),
   };
 
-  const watchedState = onChange(state, render(elements, i18nInstance));
+  const watchedState = onChange(state, view(elements, i18nInstance));
 
   const customizer = (value, other) => {
     if (value.pubDate.getTime() !== other.pubDate.getTime()) {
@@ -61,51 +82,86 @@ export default () => {
   };
 
   // eslint-disable-next-line no-unused-vars
-  let timerId = setTimeout(function checkFeed() {
-    console.log('Timer!');
-    watchedState.feeds.forEach((feed) => {
-      parser(feed)
-        .then(({ posts }) => {
-          const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
-          const newPosts = _.differenceWith(posts, oldPosts, customizer);
-          if (newPosts.length) {
-            watchedState.posts = [...newPosts, ...watchedState.posts]
-              .sort((a, b) => b.pubDate - a.pubDate);
-          }
-        }).catch((err) => {
-          watchedState.errors = err;
-        });
-    });
+  // let timerId = setTimeout(function checkFeed() {
+  //   watchedState.feeds.forEach((feed) => {
+  //     parser(feed)
+  //       .then(({ posts }) => {
+  //         const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
+  //         const newPosts = _.differenceWith(posts, oldPosts, customizer);
+  //         if (newPosts.length) {
+  //           watchedState.posts = [...newPosts, ...watchedState.posts]
+  //             .sort((a, b) => b.pubDate - a.pubDate);
+  //         }
+  //       }).catch((err) => {
+  //         watchedState.errors = err;
+  //       });
+  //   });
 
-    timerId = setTimeout(checkFeed, 5000);
-  }, 5000);
+  //   timerId = setTimeout(checkFeed, 5000);
+  // }, 5000);
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const rssData = new FormData(e.target);
+    const url = rssData.get('url').trim();
 
-    schema.validate({ url: rssData.get('url').trim() })
-      .then(({ url }) => {
-        if (watchedState.feeds.find((feed) => feed.url === url)) {
-          throw new Error('This url was already added');
-        }
+    validateUrl(url, watchedState.feeds)
+      .then((validUrl) => {
+        console.log(`Data: ${validUrl}`);
+        console.log('Validation successfull!');
+        watchedState.form.error = null;
+        watchedState.form.state = 'loading';
 
-        const feedObj = {
-          url,
+        const feed = {
+          url: validUrl,
           id: _.uniqueId(),
         };
 
-        return parser(feedObj);
-      }).then(({ feed, posts }) => {
+        return loadFeed(feed);
+      })
+      .then(({ feed, posts }) => {
+        console.log('Feed and posts were loaded successfully');
+        console.log(feed);
+        console.log(posts);
+
         watchedState.feeds.push(feed);
-        watchedState.posts = [...watchedState.posts, ...posts]
-          .sort((a, b) => b.pubDate - a.pubDate);
-        watchedState.isValid = true;
-      }).catch((error) => {
-        console.log(error);
-        watchedState.errors = error;
-        watchedState.isValid = false;
+        watchedState.posts.push(...posts).sort((post1, post2) => post2.pubDate - post1.pubDate);
+        watchedState.form.state = 'submitted';
+      })
+      .catch((error) => {
+        console.log('Found error!');
+        console.log(error.name);
+        console.log(error.message);
+
+        if (error.name === 'ValidationError') {
+          watchedState.form.error = error;
+        }
+
+        watchedState.error = error;
       });
+
+    // schema.validate({ url: rssData.get('url').trim() })
+    //   .then(({ url }) => {
+    //     if (watchedState.feeds.find((feed) => feed.url === url)) {
+    //       throw new Error('This url was already added');
+    //     }
+
+    //     const feedObj = {
+    //       url,
+    //       id: _.uniqueId(),
+    //     };
+
+    //     return parser(feedObj);
+    //   }).then(({ feed, posts }) => {
+    //     watchedState.feeds.push(feed);
+    //     watchedState.posts = [...watchedState.posts, ...posts]
+    //       .sort((a, b) => b.pubDate - a.pubDate);
+    //     watchedState.isValid = true;
+    //   }).catch((error) => {
+    //     console.log(error);
+    //     watchedState.errors = error;
+    //     watchedState.isValid = false;
+    //   });
   });
 };

@@ -3,15 +3,20 @@ export default {
     headers: {
       feeds: 'Фиды',
       posts: 'Посты',
-      viewBtn: 'Просмотр',
+    },
+    buttons: {
+      view: 'Просмотр',
     },
     feedbackMsg: {
-      notValidUrl: 'Ссылка должна быть валидным URL',
-      noValidRss: 'Ресурс не содержит валидный RSS',
-      alreadyExists: 'RSS уже существует',
-      valid: 'RSS успешно загружен',
-      isEmpty: 'Не должно быть пустым',
-      netError: 'Ошибка сети',
+      errors: {
+        notValidUrl: 'Ссылка должна быть валидным URL',
+        noValidRss: 'Ресурс не содержит валидный RSS',
+        alreadyExists: 'RSS уже существует',
+        isEmpty: 'Не должно быть пустым',
+        netError: 'Ошибка сети',
+        unknownError: 'Неизвестная ошибка',
+      },
+      success: 'RSS успешно загружен',
     },
   },
 };

@@ -1,36 +1,30 @@
-import axios from 'axios';
 import { uniqueId } from 'lodash';
 
-export default (feedObj) => {
-  const originPath = `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(feedObj.url)}`;
+export default (feedXML, feedObj) => {
+  const parser = new DOMParser();
+  const feedData = parser.parseFromString(feedXML, 'text/xml');
 
-  return axios.get(originPath).then((responce) => {
-    const parser = new DOMParser();
-    const postData = parser.parseFromString(responce.data.contents, 'text/xml');
-    return postData;
-  }).then((data) => {
-    const feed = {
-      ...feedObj,
-      title: data.querySelector('title').textContent,
-      description: data.querySelector('description').textContent,
-    };
+  const parseError = feedData.querySelector('parserror');
+  if (parseError) {
+    throw new Error('RSS Parsing error');
+  }
 
-    const items = data.querySelectorAll('item');
-    const posts = [];
+  const feed = {
+    ...feedObj,
+    title: feedData.querySelector('title').textContent,
+    description: feedData.querySelector('description').textContent,
+  };
 
-    items.forEach((item) => {
-      const post = {
-        id: uniqueId(),
-        feedId: feed.id,
-        watched: false,
-        title: item.querySelector('title').textContent,
-        description: item.querySelector('description').textContent,
-        link: item.querySelector('link').textContent,
-        pubDate: new Date(item.querySelector('pubDate').textContent),
-      };
-      posts.push(post);
-    });
+  const items = feedData.querySelectorAll('item');
+  const posts = Array.from(items).map((item) => ({
+    id: uniqueId(),
+    feedId: feed.id,
+    watched: false,
+    title: item.querySelector('title').textContent,
+    description: item.querySelector('description').textContent,
+    link: item.querySelector('link').textContent,
+    pubDate: new Date(item.querySelector('pubDate').textContent),
+  }));
 
-    return { feed, posts };
-  });
+  return { feed, posts };
 };
