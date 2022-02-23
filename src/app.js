@@ -24,6 +24,8 @@ export default () => {
         notOneOf: 'alreadyExists',
       },
     });
+  }).then(() => {
+    console.log('Yup setup');
   });
 
   // yup.setLocale({
@@ -73,33 +75,6 @@ export default () => {
 
   const watchedState = onChange(state, view(elements, i18nInstance));
 
-  const customizer = (value, other) => {
-    if (value.pubDate.getTime() !== other.pubDate.getTime()) {
-      return false;
-    }
-
-    return true;
-  };
-
-  // eslint-disable-next-line no-unused-vars
-  // let timerId = setTimeout(function checkFeed() {
-  //   watchedState.feeds.forEach((feed) => {
-  //     parser(feed)
-  //       .then(({ posts }) => {
-  //         const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
-  //         const newPosts = _.differenceWith(posts, oldPosts, customizer);
-  //         if (newPosts.length) {
-  //           watchedState.posts = [...newPosts, ...watchedState.posts]
-  //             .sort((a, b) => b.pubDate - a.pubDate);
-  //         }
-  //       }).catch((err) => {
-  //         watchedState.errors = err;
-  //       });
-  //   });
-
-  //   timerId = setTimeout(checkFeed, 5000);
-  // }, 5000);
-
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -122,11 +97,16 @@ export default () => {
       })
       .then(({ feed, posts }) => {
         console.log('Feed and posts were loaded successfully');
-        console.log(feed);
-        console.log(posts);
+
+        posts
+          .map((post) => ({
+            ...post,
+            id: _.uniqueId(),
+          }));
 
         watchedState.feeds.push(feed);
-        watchedState.posts.push(...posts).sort((post1, post2) => post2.pubDate - post1.pubDate);
+        watchedState.posts.push(...posts);
+        // .sort((post1, post2) => post2.pubDate - post1.pubDate);
         watchedState.form.state = 'submitted';
       })
       .catch((error) => {
@@ -164,4 +144,34 @@ export default () => {
     //     watchedState.isValid = false;
     //   });
   });
+
+  const refreshTimeout = 5000;
+  updatePosts(watchedState, refreshTimeout);
 };
+
+// const customizer = (value, other) => {
+//   if (value.pubDate.getTime() !== other.pubDate.getTime()) {
+//     return false;
+//   }
+
+//   return true;
+// };
+
+// eslint-disable-next-line no-unused-vars
+// let timerId = setTimeout(function checkFeed() {
+//   watchedState.feeds.forEach((feed) => {
+//     parser(feed)
+//       .then(({ posts }) => {
+//         const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
+//         const newPosts = _.differenceWith(posts, oldPosts, customizer);
+//         if (newPosts.length) {
+//           watchedState.posts = [...newPosts, ...watchedState.posts]
+//             .sort((a, b) => b.pubDate - a.pubDate);
+//         }
+//       }).catch((err) => {
+//         watchedState.errors = err;
+//       });
+//   });
+
+//   timerId = setTimeout(checkFeed, 5000);
+// }, 5000);
