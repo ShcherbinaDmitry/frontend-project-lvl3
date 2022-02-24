@@ -13,7 +13,7 @@ export default {
         noValidRss: 'Ресурс не содержит валидный RSS',
         alreadyExists: 'RSS уже существует',
         isEmpty: 'Не должно быть пустым',
-        netError: 'Ошибка сети',
+        networkError: 'Ошибка сети',
         unknownError: 'Неизвестная ошибка',
       },
       success: 'RSS успешно загружен',

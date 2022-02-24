@@ -1,8 +1,8 @@
 export default (feedXML, feedObj) => {
   const parser = new DOMParser();
   const feedData = parser.parseFromString(feedXML, 'text/xml');
+  const parseError = feedData.querySelector('parsererror');
 
-  const parseError = feedData.querySelector('parserror');
   if (parseError) {
     throw new Error('RSS Parsing error');
   }

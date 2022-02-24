@@ -1,11 +1,18 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
 import i18n from 'i18next';
 import _ from 'lodash';
 import view from './view';
 import resources from './locales';
 import loadFeed from './loadFeed';
 import updatePosts from './updatePosts';
+
+const submitHandler = (e, state) => {
+
+};
+
+const modalHandler = (e, state) => {
+
+};
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -15,17 +22,15 @@ export default () => {
     debug: false,
     resources,
   }).then(() => {
-    console.log('I18n + yup!');
-    yup.setLocale({
-      string: {
-        url: 'notValidUrl',
-      },
-      mixed: {
-        notOneOf: 'alreadyExists',
-      },
-    });
-  }).then(() => {
-    console.log('Yup setup');
+    // yup.setLocale({
+    //   string: {
+    //     url: 'notValidUrl',
+    //   },
+    //   mixed: {
+    //     notOneOf: 'alreadyExists',
+    //   },
+    //   required: 'isEmptry',
+    // });
   });
 
   // yup.setLocale({
@@ -40,21 +45,20 @@ export default () => {
 
   const validateUrl = (url, feeds) => {
     const feedUrls = feeds.map((feed) => feed.url);
-    const validationSchema = basicSchema.notOneOf(feedUrls, i18nInstance.t('feedbackMsg.errors.alreadyExists'));
+    const validationSchema = basicSchema.notOneOf(feedUrls);
 
     return validationSchema.validate(url);
   };
 
   const state = {
-    form: {
-      state: 'filling',
-      error: null,
-      url: '',
-    },
+    formState: 'filling',
     isValid: true,
     feeds: [],
     posts: [],
-    error: null,
+    readPosts: [],
+    activeModalId: null,
+    feedback: null,
+    updatePostsTimeout: 5000,
     language: defaultLanguage,
   };
 
@@ -70,10 +74,9 @@ export default () => {
     modalTitle: document.querySelector('.modal-title'),
     modalBody: document.querySelector('.modal-body'),
     modalFooter: document.querySelector('.modal-footer a'),
-    modalCloseBtn: document.querySelectorAll('[data-bs-dismiss=modal]'),
   };
 
-  const watchedState = onChange(state, view(elements, i18nInstance));
+  const watchedState = view(state, elements, i18nInstance);
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -83,10 +86,7 @@ export default () => {
 
     validateUrl(url, watchedState.feeds)
       .then((validUrl) => {
-        console.log(`Data: ${validUrl}`);
-        console.log('Validation successfull!');
-        watchedState.form.error = null;
-        watchedState.form.state = 'loading';
+        watchedState.formState = 'loading';
 
         const feed = {
           url: validUrl,
@@ -96,82 +96,43 @@ export default () => {
         return loadFeed(feed);
       })
       .then(({ feed, posts }) => {
-        console.log('Feed and posts were loaded successfully');
+        watchedState.formState = 'submitted';
+        watchedState.feedback = {
+          name: 'success',
+          message: i18nInstance.t('feedbackMsg.success'),
+        };
 
-        posts
+        const postsWithId = posts
           .map((post) => ({
             ...post,
             id: _.uniqueId(),
           }));
 
         watchedState.feeds.push(feed);
-        watchedState.posts.push(...posts);
-        // .sort((post1, post2) => post2.pubDate - post1.pubDate);
-        watchedState.form.state = 'submitted';
+        watchedState.posts.push(...postsWithId);
       })
       .catch((error) => {
         console.log('Found error!');
+        console.log(error);
         console.log(error.name);
         console.log(error.message);
 
         if (error.name === 'ValidationError') {
-          watchedState.form.error = error;
+          watchedState.formState = 'error';
         }
 
-        watchedState.error = error;
+        watchedState.feedback = error;
       });
-
-    // schema.validate({ url: rssData.get('url').trim() })
-    //   .then(({ url }) => {
-    //     if (watchedState.feeds.find((feed) => feed.url === url)) {
-    //       throw new Error('This url was already added');
-    //     }
-
-    //     const feedObj = {
-    //       url,
-    //       id: _.uniqueId(),
-    //     };
-
-    //     return parser(feedObj);
-    //   }).then(({ feed, posts }) => {
-    //     watchedState.feeds.push(feed);
-    //     watchedState.posts = [...watchedState.posts, ...posts]
-    //       .sort((a, b) => b.pubDate - a.pubDate);
-    //     watchedState.isValid = true;
-    //   }).catch((error) => {
-    //     console.log(error);
-    //     watchedState.errors = error;
-    //     watchedState.isValid = false;
-    //   });
   });
 
-  const refreshTimeout = 5000;
-  updatePosts(watchedState, refreshTimeout);
+  // updatePosts(watchedState);
+
+  elements.postsContainer.addEventListener('click', (e) => {
+    const { target: { dataset: { id } } } = e;
+
+    if (id) {
+      watchedState.activeModalId = id;
+      watchedState.readPosts.push(id);
+    }
+  });
 };
-
-// const customizer = (value, other) => {
-//   if (value.pubDate.getTime() !== other.pubDate.getTime()) {
-//     return false;
-//   }
-
-//   return true;
-// };
-
-// eslint-disable-next-line no-unused-vars
-// let timerId = setTimeout(function checkFeed() {
-//   watchedState.feeds.forEach((feed) => {
-//     parser(feed)
-//       .then(({ posts }) => {
-//         const oldPosts = watchedState.posts.filter((post) => post.feedId === feed.id);
-//         const newPosts = _.differenceWith(posts, oldPosts, customizer);
-//         if (newPosts.length) {
-//           watchedState.posts = [...newPosts, ...watchedState.posts]
-//             .sort((a, b) => b.pubDate - a.pubDate);
-//         }
-//       }).catch((err) => {
-//         watchedState.errors = err;
-//       });
-//   });
-
-//   timerId = setTimeout(checkFeed, 5000);
-// }, 5000);

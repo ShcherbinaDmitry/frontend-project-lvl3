@@ -29,10 +29,11 @@ const loadPosts = (state) => {
     }));
 };
 
-const updatePosts = (state, timeout) => {
+const updatePosts = (state) => {
+  const { updatePostsTimeout } = state;
   setTimeout(() => {
-    loadPosts(state).finally(() => updatePosts(state, timeout));
-  }, timeout);
+    loadPosts(state).finally(() => updatePosts(state));
+  }, updatePostsTimeout);
 };
 
 export default updatePosts;
