@@ -4,15 +4,15 @@ import _ from 'lodash';
 import view from './view';
 import resources from './locales';
 import loadFeed from './loadFeed';
-import updatePosts from './updatePosts';
+// import updatePosts from './updatePosts';
 
-const submitHandler = (e, state) => {
+// const submitHandler = (e, state) => {
 
-};
+// };
 
-const modalHandler = (e, state) => {
+// const modalHandler = (e, state) => {
 
-};
+// };
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -55,7 +55,7 @@ export default () => {
     isValid: true,
     feeds: [],
     posts: [],
-    readPosts: [],
+    readPosts: new Set(),
     activeModalId: null,
     feedback: null,
     updatePostsTimeout: 5000,
@@ -132,7 +132,7 @@ export default () => {
 
     if (id) {
       watchedState.activeModalId = id;
-      watchedState.readPosts.push(id);
+      watchedState.readPosts.add(id);
     }
   });
 };

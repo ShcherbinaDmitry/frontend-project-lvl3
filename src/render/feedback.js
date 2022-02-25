@@ -1,4 +1,4 @@
-export default (elements, feedback, i18nInstance) => {
+export default (elements, { feedback }, i18nInstance) => {
   const { feedbackContainer } = elements;
   console.log('feedback');
   console.log(feedback.name);

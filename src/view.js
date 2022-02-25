@@ -4,36 +4,32 @@ import renderFeedback from './render/feedback';
 import renderForm from './render/form';
 import renderFeeds from './render/feeds';
 import renderPosts from './render/posts';
-import renderReadPosts from './render/readPosts';
 import renderModal from './render/modal';
 
 export default (state, elements, i18nInstance) => {
-  const watchedState = onChange(state, (path, value) => {
+  const watchedState = onChange(state, (path) => {
     switch (path) {
       case 'formState':
-        renderForm(elements, value);
+        renderForm(elements, watchedState);
         break;
       case 'feeds':
-        renderFeeds(elements, value, i18nInstance);
+        renderFeeds(elements, watchedState, i18nInstance);
         break;
       case 'posts':
-        renderPosts(elements, value, i18nInstance);
-        break;
       case 'readPosts':
-        renderReadPosts(elements, value);
+        renderPosts(elements, watchedState, i18nInstance);
         break;
       case 'feedback':
-        renderFeedback(elements, value, i18nInstance);
+        renderFeedback(elements, watchedState, i18nInstance);
         break;
       case 'activeModalId':
-        renderModal(elements, state, value);
+        renderModal(elements, watchedState);
         break;
       case 'language':
-        renderForm(elements, watchedState.form);
-        renderFeedback(elements, watchedState.feedback, i18nInstance);
-        renderFeeds(elements, watchedState.feeds, i18nInstance);
-        renderPosts(elements, watchedState.posts, i18nInstance);
-        renderReadPosts(elements, watchedState.readPosts);
+        renderForm(elements, watchedState);
+        renderFeedback(elements, watchedState, i18nInstance);
+        renderFeeds(elements, watchedState, i18nInstance);
+        renderPosts(elements, watchedState, i18nInstance);
         break;
       default:
         break;

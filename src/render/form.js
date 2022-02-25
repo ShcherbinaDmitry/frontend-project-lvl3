@@ -1,9 +1,9 @@
-export default ({ form, input, submitBtn }, value) => {
-  if (value === 'loading') {
+export default ({ form, input, submitBtn }, { formState }) => {
+  if (formState === 'loading') {
     submitBtn.setAttribute('disabled', 'true');
   }
 
-  if (value === 'submitted') {
+  if (formState === 'submitted') {
     input.classList.remove('is-invalid');
     input.focus();
 
@@ -12,7 +12,7 @@ export default ({ form, input, submitBtn }, value) => {
     submitBtn.removeAttribute('disabled');
   }
 
-  if (value === 'error') {
+  if (formState === 'error') {
     input.classList.add('is-invalid');
 
     submitBtn.removeAttribute('disabled');
