@@ -15,23 +15,22 @@ const loadPosts = (state) => {
 
   return Promise
     .all(feedPromises)
-    .then((data) => data.forEach(({ feed, posts: updatedPosts }) => {
+    .then((data) => data.forEach(({ posts: updatedPosts }) => {
       const newPosts = _.differenceWith(updatedPosts, oldPosts, (a, b) => iter(a, b));
 
-      newPosts
+      const newPostsWithId = newPosts
         .map((post) => ({
           ...post,
           id: _.uniqueId(),
-          feedId: feed.id,
         }));
 
-      state.posts.push(...newPosts);
+      state.posts.push(...newPostsWithId);
     }));
 };
 
 const updatePosts = (state) => {
   const { updatePostsTimeout } = state;
-  setTimeout(() => {
+  return setTimeout(() => {
     loadPosts(state).finally(() => updatePosts(state));
   }, updatePostsTimeout);
 };

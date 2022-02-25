@@ -4,7 +4,7 @@ export default (feedXML, feedObj) => {
   const parseError = feedData.querySelector('parsererror');
 
   if (parseError) {
-    throw new Error('RSS Parsing error');
+    throw new Error('rss parsing error');
   }
 
   const feed = {

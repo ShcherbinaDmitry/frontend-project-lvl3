@@ -37,7 +37,6 @@ const makeListItem = (post, viewMsg, readPosts) => {
 };
 
 export default ({ postsContainer }, { posts, readPosts }, i18nInstance) => {
-  console.log('Render posts');
   const sortedPosts = posts.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
 
   const postCard = document.createElement('div');

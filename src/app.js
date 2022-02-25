@@ -4,15 +4,7 @@ import _ from 'lodash';
 import view from './view';
 import resources from './locales';
 import loadFeed from './loadFeed';
-// import updatePosts from './updatePosts';
-
-// const submitHandler = (e, state) => {
-
-// };
-
-// const modalHandler = (e, state) => {
-
-// };
+import updatePosts from './updatePosts';
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -21,17 +13,18 @@ export default () => {
     lng: defaultLanguage,
     debug: false,
     resources,
-  }).then(() => {
-    // yup.setLocale({
-    //   string: {
-    //     url: 'notValidUrl',
-    //   },
-    //   mixed: {
-    //     notOneOf: 'alreadyExists',
-    //   },
-    //   required: 'isEmptry',
-    // });
   });
+  // .then(() => {
+  // yup.setLocale({
+  //   string: {
+  //     url: 'notValidUrl',
+  //   },
+  //   mixed: {
+  //     notOneOf: 'alreadyExists',
+  //   },
+  //   required: 'isEmpty',
+  // });
+  // });
 
   // yup.setLocale({
   //   mixed: {
@@ -40,16 +33,16 @@ export default () => {
   //   url: (url) => ({ key: 'invalid URL', values: url }),
   // });
 
-  // const getUrlSchema = () => yup.string().url().required();
   const basicSchema = yup.string().url().required();
 
   const validateUrl = (url, feeds) => {
     const feedUrls = feeds.map((feed) => feed.url);
-    const validationSchema = basicSchema.notOneOf(feedUrls);
+    const validationSchema = basicSchema.notOneOf(feedUrls, 'already exists');
 
     return validationSchema.validate(url);
   };
 
+  // Initial state
   const state = {
     formState: 'filling',
     isValid: true,
@@ -62,6 +55,7 @@ export default () => {
     language: defaultLanguage,
   };
 
+  // Basic elements
   const elements = {
     form: document.querySelector('.rss-form'),
     input: document.querySelector('#url-input'),
@@ -69,8 +63,6 @@ export default () => {
     feedbackContainer: document.querySelector('.feedback'),
     feedsContainer: document.querySelector('.feeds'),
     postsContainer: document.querySelector('.posts'),
-    body: document.querySelector('body'),
-    modal: document.querySelector('.modal'),
     modalTitle: document.querySelector('.modal-title'),
     modalBody: document.querySelector('.modal-body'),
     modalFooter: document.querySelector('.modal-footer a'),
@@ -78,6 +70,7 @@ export default () => {
 
   const watchedState = view(state, elements, i18nInstance);
 
+  // Subscribe to RSS and load posts
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -99,7 +92,7 @@ export default () => {
         watchedState.formState = 'submitted';
         watchedState.feedback = {
           name: 'success',
-          message: i18nInstance.t('feedbackMsg.success'),
+          message: 'rss was successfully loaded',
         };
 
         const postsWithId = posts
@@ -112,12 +105,9 @@ export default () => {
         watchedState.posts.push(...postsWithId);
       })
       .catch((error) => {
-        console.log('Found error!');
-        console.log(error);
-        console.log(error.name);
-        console.log(error.message);
-
         if (error.name === 'ValidationError') {
+          watchedState.formState = 'validationError';
+        } else {
           watchedState.formState = 'error';
         }
 
@@ -125,8 +115,10 @@ export default () => {
       });
   });
 
-  // updatePosts(watchedState);
+  // Update posts every 5 seconds
+  updatePosts(watchedState);
 
+  // Choose post to show in modal window
   elements.postsContainer.addEventListener('click', (e) => {
     const { target: { dataset: { id } } } = e;
 

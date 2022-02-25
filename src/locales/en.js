@@ -14,7 +14,7 @@ export default {
         alreadyExists: 'RSS already exists',
         isEmpty: 'This field must be filled',
         netError: 'Network error',
-        unknown: 'Unknown error',
+        unknown: 'Unknown error. Please try later',
       },
       success: 'RSS was successfully loaded',
     },

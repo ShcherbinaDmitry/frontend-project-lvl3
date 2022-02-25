@@ -1,5 +1,5 @@
 import path from 'path';
-import app from '@hexlet/code';
+// import app from '@hexlet/code';
 
 beforeEach(() => {
   const pathToHtml = path.resolve(__dirname, '__fixtures__', 'index.html');
