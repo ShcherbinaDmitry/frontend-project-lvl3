@@ -60,11 +60,13 @@ export default () => {
 
     const rssData = new FormData(e.target);
     const url = rssData.get('url').trim();
+    console.log('Form data');
     console.log(url);
 
     validateUrl(url, watchedState.feeds)
       .then((validUrl) => {
         watchedState.formState = 'loading';
+        rssData.delete('url');
 
         const feed = {
           url: validUrl,

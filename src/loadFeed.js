@@ -1,17 +1,19 @@
 import axios from 'axios';
 import parse from './parser.js';
 
-const proxify = (url) => {
-  const link = 'https://hexlet-allorigins.herokuapp.com/get';
+const proxify = (link) => {
+  const url = new URL('https://hexlet-allorigins.herokuapp.com/get');
+  url.searchParams.set('url', link);
+  url.searchParams.set('disableCache', 'true');
 
-  return `${link}?disableCache=true&url=${url}`;
+  return url;
 };
 
 export default (feed) => {
   const path = proxify(feed.url);
   console.log('Logging path obj');
   console.log(path);
-  // console.log(path.searchParams.get('url'));
+  console.log(path.searchParams.get('url'));
 
   return axios.get(path).then((responce) => parse(responce.data.contents, feed));
 };
