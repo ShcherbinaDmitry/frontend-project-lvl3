@@ -23,7 +23,8 @@
   "jest": {
     "verbose": true,
     "testURL": "http://localhost/",
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "transformIgnorePatterns": "/node_modules/"
   },
   "devDependencies": {
     "@babel/core": "^7.17.2",

@@ -7,7 +7,7 @@ export default (feed) => {
   path.searchParams.set('url', feed.url);
   console.log('Logging path obj');
   console.log(path);
-  console.log(path.url);
+  console.log(path.searchParams.get('url'));
 
-  return axios.get(path.href).then((responce) => parse(responce.data.contents, feed));
+  return axios.get(path).then((responce) => parse(responce.data.contents, feed));
 };
