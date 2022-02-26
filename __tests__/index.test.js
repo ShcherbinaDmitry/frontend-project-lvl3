@@ -1,5 +1,9 @@
 import app from '../src/app.js';
 
 beforeEach(() => {
-  const appInstance = app();
+  app();
+});
+
+test('app', () => {
+  expect(true).toBeTruthy();
 });

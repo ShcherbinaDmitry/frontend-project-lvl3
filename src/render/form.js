@@ -1,6 +1,8 @@
 export default ({ form, input, submitBtn }, { formState }) => {
   if (formState === 'loading') {
     submitBtn.setAttribute('disabled', 'true');
+    input.focus();
+    form.reset();
 
     return;
   }
@@ -13,7 +15,5 @@ export default ({ form, input, submitBtn }, { formState }) => {
     input.classList.add('is-invalid');
   }
 
-  input.focus();
-  form.reset();
   submitBtn.removeAttribute('disabled');
 };
