@@ -6,5 +6,5 @@ export default (feed) => {
   path.searchParams.set('disableCache', true);
   path.searchParams.set('url', feed.url);
 
-  return axios.get(path).then((responce) => parse(responce.data.contents, feed));
+  return axios.get(path.toString()).then((responce) => parse(responce.data.contents, feed));
 };

@@ -7,13 +7,13 @@ export default ({ form, input, submitBtn }, { formState }) => {
 
   if (formState === 'submitted') {
     input.classList.remove('is-invalid');
-    input.focus();
-    form.reset();
   }
 
   if (formState === 'validationError') {
     input.classList.add('is-invalid');
   }
 
+  input.focus();
+  form.reset();
   submitBtn.removeAttribute('disabled');
 };
