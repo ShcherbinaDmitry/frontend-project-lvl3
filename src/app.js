@@ -63,12 +63,7 @@ export default () => {
       .then((validUrl) => {
         watchedState.formState = 'loading';
 
-        const feed = {
-          url: validUrl,
-          id: _.uniqueId(),
-        };
-
-        return loadFeed(feed);
+        return loadFeed(validUrl);
       })
       .then(({ feed, posts }) => {
         watchedState.formState = 'submitted';
@@ -77,13 +72,19 @@ export default () => {
           message: 'rss was successfully loaded',
         };
 
+        const feedWithId = {
+          ...feed,
+          id: _.uniqueId(),
+        };
+
         const postsWithId = posts
           .map((post) => ({
             ...post,
+            feedId: feedWithId.id,
             id: _.uniqueId(),
           }));
 
-        watchedState.feeds.push(feed);
+        watchedState.feeds.push(feedWithId);
         watchedState.posts.push(...postsWithId);
       })
       .catch((error) => {
