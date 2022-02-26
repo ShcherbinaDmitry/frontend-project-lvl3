@@ -19,7 +19,6 @@ export default () => {
 
   const validateUrl = (url, feeds) => {
     const feedUrls = feeds.map((feed) => feed.url);
-    console.log(feedUrls);
     const validationSchema = basicSchema.notOneOf(feedUrls, 'already exists');
 
     return validationSchema.validate(url);
@@ -59,7 +58,6 @@ export default () => {
 
     const rssData = new FormData(e.target);
     const url = rssData.get('url').trim();
-    console.log(typeof url);
 
     validateUrl(url, watchedState.feeds)
       .then((validUrl) => {
