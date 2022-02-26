@@ -1,7 +1,8 @@
-export default ({ input, submitBtn }, { formState }) => {
+export default ({ form, input, submitBtn }, { formState }) => {
   if (formState === 'loading') {
     submitBtn.setAttribute('disabled', 'true');
     input.focus();
+    form.reset();
 
     return;
   }

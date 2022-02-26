@@ -56,8 +56,11 @@ export default () => {
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    console.log(elements.input.value);
+
     const rssData = new FormData(e.target);
     const url = rssData.get('url').trim();
+    console.log(url);
 
     validateUrl(url, watchedState.feeds)
       .then((validUrl) => {
