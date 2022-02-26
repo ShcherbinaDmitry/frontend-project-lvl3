@@ -15,13 +15,14 @@ const loadPosts = (state) => {
 
   return Promise
     .all(feedPromises)
-    .then((data) => data.forEach(({ posts: updatedPosts }) => {
+    .then((data) => data.forEach(({ feed, posts: updatedPosts }) => {
       const newPosts = _.differenceWith(updatedPosts, oldPosts, (a, b) => iter(a, b));
 
       const newPostsWithId = newPosts
         .map((post) => ({
           ...post,
           id: _.uniqueId(),
+          feedId: feed.id,
         }));
 
       state.posts.push(...newPostsWithId);

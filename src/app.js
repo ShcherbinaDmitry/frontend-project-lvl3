@@ -63,7 +63,11 @@ export default () => {
       .then((validUrl) => {
         watchedState.formState = 'loading';
 
-        return loadFeed(validUrl);
+        const feed = {
+          url: validUrl,
+        };
+
+        return loadFeed(feed);
       })
       .then(({ feed, posts }) => {
         watchedState.formState = 'submitted';

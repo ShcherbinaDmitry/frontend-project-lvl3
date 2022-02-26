@@ -1,4 +1,4 @@
-export default (feedXML, url) => {
+export default (feedXML, feedObj) => {
   const parser = new DOMParser();
   const feedData = parser.parseFromString(feedXML, 'text/xml');
   const parseError = feedData.querySelector('parsererror');
@@ -8,9 +8,9 @@ export default (feedXML, url) => {
   }
 
   const feed = {
+    ...feedObj,
     title: feedData.querySelector('title').textContent,
     description: feedData.querySelector('description').textContent,
-    url,
   };
 
   const items = feedData.querySelectorAll('item');
