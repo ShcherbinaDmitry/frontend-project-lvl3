@@ -1,10 +1,10 @@
 import * as yup from 'yup';
 import i18n from 'i18next';
 import _ from 'lodash';
-import view from './view';
-import resources from './locales';
-import loadFeed from './loadFeed';
-import updatePosts from './updatePosts';
+import view from './view.js';
+import resources from './locales/index.js';
+import loadFeed from './loadFeed.js';
+import updatePosts from './updatePosts.js';
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -14,24 +14,6 @@ export default () => {
     debug: false,
     resources,
   });
-  // .then(() => {
-  // yup.setLocale({
-  //   string: {
-  //     url: 'notValidUrl',
-  //   },
-  //   mixed: {
-  //     notOneOf: 'alreadyExists',
-  //   },
-  //   required: 'isEmpty',
-  // });
-  // });
-
-  // yup.setLocale({
-  //   mixed: {
-  //     default: 'field_invalid',
-  //   },
-  //   url: (url) => ({ key: 'invalid URL', values: url }),
-  // });
 
   const basicSchema = yup.string().url().required();
 

@@ -1,10 +1,10 @@
 import onChange from 'on-change';
 
-import renderFeedback from './render/feedback';
-import renderForm from './render/form';
-import renderFeeds from './render/feeds';
-import renderPosts from './render/posts';
-import renderModal from './render/modal';
+import renderFeedback from './render/feedback.js';
+import renderForm from './render/form.js';
+import renderFeeds from './render/feeds.js';
+import renderPosts from './render/posts.js';
+import renderModal from './render/modal.js';
 
 export default (state, elements, i18nInstance) => onChange(state, (path) => {
   switch (path) {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import parse from './parser';
+import parse from './parser.js';
 
 export default (feed) => {
   const path = new URL('https://hexlet-allorigins.herokuapp.com/get');

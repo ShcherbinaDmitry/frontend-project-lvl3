@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import loadFeed from './loadFeed';
+import loadFeed from './loadFeed.js';
 
 const iter = (newVal, oldVal) => {
   if (newVal.pubDate.getTime() === oldVal.pubDate.getTime() && newVal.link === oldVal.link) {

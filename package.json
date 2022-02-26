@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "RSS Aggregator",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "start": "webpack-dev-server",
     "build": "webpack",
