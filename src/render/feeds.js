@@ -15,7 +15,8 @@ const makeListItem = (feed) => {
   return listItem;
 };
 
-export default ({ feedsContainer }, { feeds }, i18nInstance) => {
+export default ({ feedsContainer, form }, { feeds }, i18nInstance) => {
+  form.reset();
   const feedCard = document.createElement('div');
   feedCard.classList.add('card', 'border-0');
 
