@@ -59,6 +59,8 @@ export default () => {
     const url = rssData.get('url').trim();
     console.log('Form data');
     console.log(url);
+    elements.form.reset();
+    console.log(url);
 
     validateUrl(url, watchedState.feeds)
       .then(() => {
