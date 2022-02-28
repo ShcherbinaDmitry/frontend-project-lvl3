@@ -1,24 +1,34 @@
-export default (feedXML) => {
+export default (content) => {
   const parser = new DOMParser();
-  const feedData = parser.parseFromString(feedXML, 'text/xml');
-  const parseError = feedData.querySelector('parsererror');
+  const doc = parser.parseFromString(content, 'application/xml');
 
+  const parseError = doc.querySelector('parsererror');
   if (parseError) {
-    throw new Error('rss parsing error');
+    const error = new Error(parseError.textContent);
+    error.isParsingError = true;
+    throw error;
   }
 
+  const feedName = doc.querySelector('channel title').textContent;
+  const feedDescription = doc.querySelector('channel description').textContent;
+
   const feed = {
-    title: feedData.querySelector('title').textContent,
-    description: feedData.querySelector('description').textContent,
+    name: feedName,
+    description: feedDescription,
   };
 
-  const items = feedData.querySelectorAll('item');
-  const posts = Array.from(items).map((item) => ({
-    title: item.querySelector('title').textContent,
-    description: item.querySelector('description').textContent,
-    link: item.querySelector('link').textContent,
-    pubDate: new Date(item.querySelector('pubDate').textContent),
-  }));
+  const items = doc.querySelectorAll('item');
+  const posts = Array.from(items).map((item) => {
+    const itemName = item.querySelector('title').textContent;
+    const itemLink = item.querySelector('link').textContent;
+    const itemDescription = item.querySelector('description').textContent;
+
+    return {
+      name: itemName,
+      description: itemDescription,
+      link: itemLink,
+    };
+  });
 
   return { feed, posts };
 };
