@@ -11,7 +11,7 @@ const iter = (newVal, oldVal) => {
 
 const loadPosts = (state) => {
   const { feeds, posts: oldPosts } = state;
-  const feedPromises = feeds.map((feed) => loadFeed(feed));
+  const feedPromises = feeds.map(({ url }) => loadFeed(url));
 
   return Promise
     .all(feedPromises)

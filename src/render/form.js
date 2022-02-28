@@ -11,7 +11,7 @@ export default ({ form, input, submitBtn }, { formState }) => {
     input.classList.remove('is-invalid');
   }
 
-  if (formState === 'validationError') {
+  if (formState === 'error') {
     input.classList.add('is-invalid');
   }
 

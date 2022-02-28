@@ -2,8 +2,9 @@ export default (elements, { feedback }, i18nInstance) => {
   const { feedbackContainer } = elements;
 
   let message = '';
+  console.log(`Feedback message: ${feedback.message}`);
 
-  switch (feedback.message) {
+  switch (feedback?.message) {
     case 'rss was successfully loaded':
       message = i18nInstance.t('feedbackMsg.success');
       break;
@@ -29,7 +30,7 @@ export default (elements, { feedback }, i18nInstance) => {
 
   feedbackContainer.textContent = message;
 
-  if (feedback.name === 'success') {
+  if (feedback?.name === 'success') {
     feedbackContainer.classList.add('text-success');
     feedbackContainer.classList.remove('text-danger');
   } else {

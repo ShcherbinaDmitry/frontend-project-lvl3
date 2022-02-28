@@ -21,7 +21,7 @@ export default () => {
     const feedUrls = feeds.map((feed) => feed.url);
     const validationSchema = basicSchema.notOneOf(feedUrls, 'already exists');
 
-    return validationSchema.validate(url);
+    validationSchema.validateSync(url);
   };
 
   // Initial state
@@ -52,25 +52,27 @@ export default () => {
 
   const watchedState = view(state, elements, i18nInstance);
 
-  const rssData = new FormData(elements.form);
   // Subscribe to RSS and load posts
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    const rssData = new FormData(e.target);
     const url = rssData.get('url').trim();
     console.log('Form data');
     console.log(url);
 
-    validateUrl(url, watchedState.feeds)
-      .then((validUrl) => {
-        watchedState.formState = 'loading';
+    try {
+      validateUrl(url, watchedState.feeds);
+      watchedState.formState = 'loading';
+      watchedState.feedback = null;
+    } catch (error) {
+      watchedState.formState = 'error';
+      watchedState.feedback = error;
+      // console.log('VALIDATION ERROR!');
+      return;
+    }
 
-        const feed = {
-          url: validUrl,
-        };
-
-        return loadFeed(feed);
-      })
+    loadFeed(url)
       .then(({ feed, posts }) => {
         watchedState.formState = 'submitted';
         watchedState.feedback = {
@@ -78,10 +80,9 @@ export default () => {
           message: 'rss was successfully loaded',
         };
 
-        elements.form.reset();
-
         const feedWithId = {
           ...feed,
+          url,
           id: _.uniqueId(),
         };
 
@@ -96,12 +97,6 @@ export default () => {
         watchedState.posts.push(...postsWithId);
       })
       .catch((error) => {
-        if (error.name === 'ValidationError') {
-          watchedState.formState = 'validationError';
-        } else {
-          watchedState.formState = 'error';
-        }
-
         watchedState.feedback = error;
       });
   });
