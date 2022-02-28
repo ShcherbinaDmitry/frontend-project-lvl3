@@ -11,9 +11,6 @@ const proxify = (link) => {
 
 export default (url) => {
   const path = proxify(url);
-  console.log('Logging path obj');
-  console.log(path);
-  console.log(path.searchParams.get('url'));
 
   return axios.get(path).then((responce) => parse(responce.data.contents));
 };
