@@ -57,7 +57,7 @@ export default () => {
 
     const rssData = new FormData(e.target);
     const url = rssData.get('url').trim();
-    //watchedState.formState = 'submitting';
+    // watchedState.formState = 'submitting';
     console.log('Form data');
     console.log(url);
     // elements.form.reset();

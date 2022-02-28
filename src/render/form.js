@@ -4,6 +4,7 @@ export default (elements, { formState }) => {
     submitBtn.setAttribute('disabled', 'true');
     input.focus();
     input.value = '';
+    input.setAttribute('readonly', 'true');
     form.reset();
 
     return;
@@ -17,5 +18,6 @@ export default (elements, { formState }) => {
     input.classList.add('is-invalid');
   }
 
+  input.removeAttribute('readonly');
   submitBtn.removeAttribute('disabled');
 };
