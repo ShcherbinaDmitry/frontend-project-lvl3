@@ -63,8 +63,9 @@ export default () => {
     validateUrl(url, watchedState.feeds)
       .then(() => {
         watchedState.formState = 'loading';
+
+        return loadFeed(url);
       })
-      .then(() => loadFeed(url))
       .then(({ feed, posts }) => {
         watchedState.formState = 'submitted';
         watchedState.feedback = {
