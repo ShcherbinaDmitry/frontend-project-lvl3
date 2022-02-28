@@ -1,130 +1,110 @@
 import * as yup from 'yup';
 import i18n from 'i18next';
 import _ from 'lodash';
+import view from './view.js';
 import resources from './locales/index.js';
-import getWatchedState from './view.js';
 import loadFeed from './loadFeed.js';
-import loadPosts from './loadPosts.js';
+import updatePosts from './updatePosts.js';
 
-const updatePosts = (watchedState) => {
-  const requestsTimeout = 5000;
-  setTimeout(() => {
-    loadPosts(watchedState).finally(() => updatePosts(watchedState));
-  }, requestsTimeout);
-};
+const validateUrl = (url, feeds) => {
+  const feedUrls = feeds.map((feed) => feed.url);
+  const validationSchema = yup.string().url().required().notOneOf(feedUrls, 'already exists');
 
-const validate = (url, links) => {
-  const shema = yup.string().url().required().notOneOf(links);
-  shema.validateSync(url);
-};
-
-const detectErrorType = (error) => {
-  if (error.isParsingError) {
-    return 'invalidRss';
-  }
-
-  if (error.isAxiosError) {
-    return 'connection';
-  }
-
-  return 'unknown';
+  return validationSchema.validate(url);
 };
 
 export default () => {
-  const elements = {
-    feedbackContainer: document.querySelector('.feedback-container'),
-    rssForm: document.querySelector('.rss-form'),
-    urlInput: document.querySelector('input[aria-label="url"]'),
-    rssBtn: document.querySelector('button[aria-label="add"]'),
-    feedsContainer: document.querySelector('.feeds'),
-    postsContainer: document.querySelector('.posts'),
-    modalContainer: document.querySelector('.modal'),
-  };
-
-  const state = {
-    modal: {
-      modalPostId: null,
-    },
-    feeds: [],
-    posts: {
-      postsList: [],
-      postsReadList: new Set(),
-    },
-    rssForm: {
-      error: null,
-      state: 'filling',
-      url: '',
-    },
-  };
-
+  // Default i18n setup
   const defaultLanguage = 'ru';
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
     lng: defaultLanguage,
     debug: false,
     resources,
-  })
-    .then(() => {
-      yup.setLocale({
-        string: {
-          url: 'incorrectUrl',
-        },
-        mixed: {
-          notOneOf: 'dublicateUrl',
-        },
+  });
+
+  // Initial state
+  const state = {
+    formState: 'filling',
+    isValid: true,
+    feeds: [],
+    posts: [],
+    readPosts: new Set(),
+    activeModalId: null,
+    feedback: null,
+    updatePostsTimeout: 5000,
+    language: defaultLanguage,
+  };
+
+  // Basic elements
+  const elements = {
+    form: document.querySelector('.rss-form'),
+    input: document.querySelector('#url-input'),
+    submitBtn: document.querySelector('button[type=submit]'),
+    feedbackContainer: document.querySelector('.feedback'),
+    feedsContainer: document.querySelector('.feeds'),
+    postsContainer: document.querySelector('.posts'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalBody: document.querySelector('.modal-body'),
+    modalFooter: document.querySelector('.modal-footer a'),
+  };
+
+  const watchedState = view(state, elements, i18nInstance);
+
+  // Validate and subscribe to RSS, load posts
+  elements.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const rssData = new FormData(e.target);
+    const url = rssData.get('url').trim();
+    console.log('Form data');
+    console.log(url);
+
+    validateUrl(url, watchedState.feeds)
+      .then(() => {
+        watchedState.formState = 'loading';
+
+        return loadFeed(url);
+      })
+      .then(({ feed, posts }) => {
+        watchedState.formState = 'submitted';
+        watchedState.feedback = {
+          name: 'success',
+          message: 'rss was successfully loaded',
+        };
+
+        const feedWithId = {
+          ...feed,
+          url,
+          id: _.uniqueId(),
+        };
+
+        const postsWithId = posts
+          .map((post) => ({
+            ...post,
+            feedId: feedWithId.id,
+            id: _.uniqueId(),
+          }));
+
+        watchedState.feeds.push(feedWithId);
+        watchedState.posts.push(...postsWithId);
+      })
+      .catch((error) => {
+        watchedState.formState = error.name;
+        watchedState.feedback = error;
       });
+  });
 
-      const watchedState = getWatchedState(state, elements, i18nInstance);
+  // Update posts every 5 seconds
+  updatePosts(watchedState);
 
-      elements.rssForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const currentUrl = formData.get('url').trim();
+  // Choose post to show in modal window
+  elements.postsContainer.addEventListener('click', (e) => {
+    const { target: { dataset: { id } } } = e;
 
-        try {
-          validate(currentUrl, state.feeds.map((item) => item.url));
-          watchedState.rssForm.error = null;
-        } catch (error) {
-          watchedState.rssForm.error = error.message;
-          watchedState.rssForm.state = 'error';
-          return;
-        }
-        watchedState.rssForm.url = currentUrl;
-        watchedState.rssForm.state = 'loading';
-
-        loadFeed(currentUrl)
-          .then(({ feed, posts }) => {
-            const feedId = _.uniqueId();
-            const newFeedWithId = {
-              ...feed,
-              id: feedId,
-              url: currentUrl,
-            };
-
-            const newPostsWithId = posts.map((post) => ({
-              ...post,
-              id: _.uniqueId(),
-              feedId,
-            }));
-
-            watchedState.feeds.push(newFeedWithId);
-            watchedState.posts.postsList.push(...newPostsWithId);
-            watchedState.rssForm.state = 'completed';
-          })
-          .catch((error) => {
-            watchedState.rssForm.error = detectErrorType(error);
-            watchedState.rssForm.state = 'error';
-          });
-      });
-      updatePosts(watchedState);
-
-      elements.postsContainer.addEventListener('click', (e) => {
-        const { target } = e;
-        const btnId = target.dataset.id;
-        if (btnId) {
-          watchedState.modal.modalPostId = btnId;
-          watchedState.posts.postsReadList.add(btnId);
-        }
-      });
-    });
+    if (id) {
+      watchedState.activeModalId = id;
+      watchedState.readPosts.add(id);
+    }
+  });
 };
