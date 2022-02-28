@@ -3,7 +3,7 @@ export default (elements, { formState }) => {
   if (formState === 'loading') {
     submitBtn.setAttribute('disabled', 'true');
     input.focus();
-    form.value = '';
+    input.value = '';
     form.reset();
 
     return;
