@@ -6,7 +6,15 @@ import resources from './locales/index.js';
 import loadFeed from './loadFeed.js';
 import updatePosts from './updatePosts.js';
 
+const validateUrl = (url, feeds) => {
+  const feedUrls = feeds.map((feed) => feed.url);
+  const validationSchema = yup.string().url().required().notOneOf(feedUrls, 'already exists');
+
+  return validationSchema.validate(url);
+};
+
 export default () => {
+  // Default i18n setup
   const defaultLanguage = 'ru';
   const i18nInstance = i18n.createInstance();
   i18nInstance.init({
@@ -14,15 +22,6 @@ export default () => {
     debug: false,
     resources,
   });
-
-  const basicSchema = yup.string().url().required();
-
-  const validateUrl = (url, feeds) => {
-    const feedUrls = feeds.map((feed) => feed.url);
-    const validationSchema = basicSchema.notOneOf(feedUrls, 'already exists');
-
-    validationSchema.validateSync(url);
-  };
 
   // Initial state
   const state = {
@@ -61,18 +60,12 @@ export default () => {
     console.log('Form data');
     console.log(url);
 
-    try {
-      validateUrl(url, watchedState.feeds);
-      watchedState.formState = 'loading';
-      watchedState.feedback = null;
-    } catch (error) {
-      watchedState.formState = 'error';
-      watchedState.feedback = error;
-      // console.log('VALIDATION ERROR!');
-      return;
-    }
+    validateUrl(url, watchedState.feeds)
+      .then(() => {
+        watchedState.formState = 'loading';
 
-    loadFeed(url)
+        return loadFeed(url);
+      })
       .then(({ feed, posts }) => {
         watchedState.formState = 'submitted';
         watchedState.feedback = {
@@ -97,6 +90,7 @@ export default () => {
         watchedState.posts.push(...postsWithId);
       })
       .catch((error) => {
+        watchedState.formState = error.name;
         watchedState.feedback = error;
       });
   });

@@ -2,7 +2,7 @@ export default (elements, { feedback }, i18nInstance) => {
   const { feedbackContainer } = elements;
 
   let message = '';
-  console.log(`Feedback message: ${feedback.message}`);
+  console.log(`Feedback message: ${feedback?.message}`);
 
   switch (feedback?.message) {
     case 'rss was successfully loaded':
