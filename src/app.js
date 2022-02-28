@@ -52,13 +52,11 @@ export default () => {
 
   const watchedState = view(state, elements, i18nInstance);
 
+  const rssData = new FormData(elements.form);
   // Subscribe to RSS and load posts
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    console.log(elements.input.value);
-
-    const rssData = new FormData(e.target);
     const url = rssData.get('url').trim();
     console.log('Form data');
     console.log(url);
@@ -66,7 +64,6 @@ export default () => {
     validateUrl(url, watchedState.feeds)
       .then((validUrl) => {
         watchedState.formState = 'loading';
-        rssData.delete('url');
 
         const feed = {
           url: validUrl,
@@ -80,6 +77,8 @@ export default () => {
           name: 'success',
           message: 'rss was successfully loaded',
         };
+
+        elements.form.reset();
 
         const feedWithId = {
           ...feed,
