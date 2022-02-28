@@ -60,6 +60,7 @@ export default () => {
     console.log('Form data');
     console.log(url);
     elements.form.reset();
+    elements.input.value = '';
     console.log(url);
 
     validateUrl(url, watchedState.feeds)
