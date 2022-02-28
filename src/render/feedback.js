@@ -1,5 +1,6 @@
 export default (elements, { feedback }, i18nInstance) => {
   const { feedbackContainer } = elements;
+  console.log(feedback);
 
   let message = '';
   console.log(`Feedback message: ${feedback?.message}`);

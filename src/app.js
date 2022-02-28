@@ -51,7 +51,7 @@ export default () => {
 
   const watchedState = view(state, elements, i18nInstance);
 
-  // Subscribe to RSS and load posts
+  // Validate and subscribe to RSS, load posts
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -63,9 +63,8 @@ export default () => {
     validateUrl(url, watchedState.feeds)
       .then(() => {
         watchedState.formState = 'loading';
-
-        return loadFeed(url);
       })
+      .then(() => loadFeed(url))
       .then(({ feed, posts }) => {
         watchedState.formState = 'submitted';
         watchedState.feedback = {
