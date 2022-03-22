@@ -2,7 +2,7 @@ import axios from 'axios';
 import parse from './parser.js';
 
 const proxify = (link) => {
-  const url = new URL('https://hexlet-allorigins.herokuapp.com/get');
+  const url = new URL('https://allorigins.hexlet.app/get');
   url.searchParams.set('url', link);
   url.searchParams.set('disableCache', 'true');
 
